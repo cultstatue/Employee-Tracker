@@ -1,4 +1,4 @@
-const { username, password} = require('./config.json')
+const { username, password } = require('./config.json')
 const mysql = require('mysql2');
 const cTable = require('console.table');
 
@@ -15,18 +15,15 @@ const db = mysql.createConnection({
 
 );
 
-// db.query(`SELECT * FROM departments`, (err, rows) => {
+getDepartments = function() {
 
-//   console.table(rows);
+    db.promise().query("SELECT * FROM departments")
+    .then( ([rows,fields]) => {
 
-// });
+        console.table(rows);
 
-db.promise().query("SELECT * FROM departments")
-  .then( ([rows,fields]) => {
+    })
+    .catch(console.log)
+    .then( () => db.end());
 
-    console.table(rows);
-
-  })
-  .catch(console.log)
-  .then( () => db.end());
-
+}
