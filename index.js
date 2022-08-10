@@ -15,9 +15,18 @@ const db = mysql.createConnection({
 
 );
 
-db.query(`SELECT * FROM departments`, (err, rows) => {
+// db.query(`SELECT * FROM departments`, (err, rows) => {
 
-  console.table(rows);
+//   console.table(rows);
 
-});
+// });
+
+db.promise().query("SELECT * FROM departments")
+  .then( ([rows,fields]) => {
+
+    console.table(rows);
+
+  })
+  .catch(console.log)
+  .then( () => db.end());
 
