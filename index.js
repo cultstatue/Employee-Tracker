@@ -32,7 +32,7 @@ getDepartments = function() {
 
 getRoles = function() {
 
-    const sql = 'SELECT roles.*, departments.name AS dep_name FROM roles LEFT JOIN departments ON roles.dep_id = departments.id;'
+    const sql = 'SELECT roles.*, departments.name AS department FROM roles LEFT JOIN departments ON roles.dep_id = departments.id;'
 
     db.promise().query(sql)
     .then( ([rows,fields]) => {
