@@ -30,6 +30,19 @@ getDepartments = function() {
 
 }
 
+addDepartment = function() {
+
+    const sql = 'INSERT INTO departments (name) VALUES (?)'
+
+    const params = "Test Department"
+
+    db.promise().query(sql, params)
+
+    .then( console.log('Department added to database.'))
+
+    .catch(console.log)
+}
+
 getRoles = function() {
 
     const sql = 'SELECT roles.*, departments.name AS department FROM roles LEFT JOIN departments ON roles.dep_id = departments.id;'
@@ -41,12 +54,24 @@ getRoles = function() {
 
     })
     .catch(console.log)
-    .then( () => db.end());
+}
+
+addRole = function() {
+
+    const sql = 'INSERT INTO roles (title, salary, dep_id) VALUES (?, ?, ?)'
+
+    const params = ["Test Role", 200, 3];
+
+    db.promise().query(sql, params)
+
+    .then( console.log('role added to database.'))
+
+    .catch(console.log)
 }
 
 getEmployees = function() {
 
-    const sql = 'SELECT employees.id, employees.first_name, employees.last_name, manager_id, roles.title, roles.salary, departments.name AS department FROM employees LEFT JOIN roles ON roles.id = employees.role_id LEFT JOIN departments ON departments.id = roles.dep_id;';
+    const sql = "SELECT a.id AS 'ID', a.first_name AS 'First Name', a.last_name AS 'Last Name',b.first_name AS 'Manager', roles.title AS 'Title', roles.salary AS 'Salary', departments.name AS 'Department' FROM employees AS a LEFT JOIN employees AS b ON a.manager_id = b.id LEFT JOIN roles ON roles.id = a.role_id LEFT JOIN departments ON departments.id = roles.dep_id;";
 
     db.promise().query(sql)
     .then( ([rows,fields]) => {
@@ -55,5 +80,32 @@ getEmployees = function() {
 
     })
     .catch(console.log)
-    .then( () => db.end());
+}
+
+addEmployee = function() {
+    
+    const sql = 'INSERT INTO roles (title, salary, dep_id) VALUES (?, ?, ?)'
+
+    const params = ["Test Role", 200, 3];
+
+    db.promise().query(sql, params)
+
+    .then( console.log('Role added to database.'))
+
+    .catch(console.log)
+
+}
+
+updateEmployee = function() {
+
+    const sql = 'UPDATE employees SET role_id = ? WHERE id = ?;';
+
+    const params = [2,1]
+
+    db.promise().query(sql, params)
+
+    .then( console.log('Role change comitted to database.'))
+
+    .catch(console.log)
+
 }
