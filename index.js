@@ -1,111 +1,188 @@
-const { username, password } = require('./config.json')
+const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const cTable = require('console.table');
 
-const db = mysql.createConnection({
+const Departments = require('./utils/departments');
+const Roles = require('./utils/roles');
+const Employees = require('./utils/employees');
 
-    host: 'localhost',
-    user: username,
-    password: password,
-    database: 'employeetracker'
+function initApp () {}
 
-},
+initApp.prototype.startPrompt = function() {
 
-    console.log('Connected to the employee tracker database.')
+    inquirer
+    .prompt({
 
-);
+        type: 'list',
+        name: 'option',
+        message: "What would you like to do?",
+        choices: [
 
-getDepartments = function() {
+            'View All Departments',
+            'Add a Department',
+            'View All Roles',
+            'Add a Role',
+            'View all Employees',
+            'Add an Employee',
+            "Update an Employee's role",
+            "Quit"
+        ]
+    })
+    .then(choice => {
 
-    const sql = "SELECT * FROM departments;";
+        if(choice.option === 'View All Departments') {
 
-    db.promise().query(sql)
-    .then( ([rows,fields]) => {
+            new Departments().get();
+            this.returnPrompt();
 
-        console.table('Departments', rows);
+        } else if (choice.option === 'Add a Department') {
+            
+            this.addDep();
+
+        } else if (choice.option === 'View All Roles') {
+
+            new Roles().get()
+            this.returnPrompt();
+
+        } else if (choice.option === 'Add a Role') {
+
+            this.addRole();
+
+        } else if (choice.option === 'View all Employees') {
+
+            new Employees().get();
+            this.returnPrompt();
+
+        } else if (choice.option === 'Add an Employee') {
+            console.log("add employee")
+        } else if (choice.option === "Update an Employee's role") {
+            console.log("update an employee")
+        } else if (choice.option === "Quit") {
+            console.log("goodbye!")
+            return;
+        }
+    })
+
+
+}
+
+initApp.prototype.addDep = function() {
+
+    inquirer
+    .prompt ({
+
+        type: "input",
+        name: "depname",
+        message: "please enter the new Department's name.",
+        validate: depInput => {
+
+            if (depInput) {
+                return true;
+            } else {
+                console.log("Please enter your new Department's name.");
+                return false;
+            }
+        }
 
     })
-    .catch(console.log)
-    .then( () => db.end());
+    .then((input) => {
+
+        new Departments().add(input.depname);
+        this.returnPrompt();
+    })
+}
+
+initApp.prototype.addRole = function() {
+
+    inquirer
+    .prompt ([
+
+        {
+
+            type: "input",
+            name: "rolename",
+            message: "Please enter the new position's title.",
+            validate: input => {
+
+                if (input) {
+                    return true;
+                } else {
+                    console.log('Please enter the position title');
+                    return false;
+                }
+            }
+
+        },
+        {
+
+            type: "input",
+            name: "salary",
+            message: "Please enter the new position's salary",
+            validate: input => {
+
+                if(input.match(/^[0-9]+$/) != null)
+                {
+                    return true;
+                }
+                else
+                {   
+                    console.log('Please enter a salary amount.');
+                    return false;
+                }
+            }
+
+        },
+        {
+
+            type: "list",
+            name: "department",
+            message: "Please choose the new role's associated department",
+            choices: []
+
+        },
+        
+    ])
+    .then((input) => {
+
+        // new Roles().add();
+        // this.returnPrompt();
+    })
 
 }
 
-addDepartment = function() {
+initApp.prototype.returnPrompt = function() {
 
-    const sql = 'INSERT INTO departments (name) VALUES (?)'
+    inquirer
+    .prompt({
 
-    const params = "Test Department"
+        type: 'list',
+        name: 'more',
+        message: "Would you like to return to the main menu?",
+        choices: [
 
-    db.promise().query(sql, params)
-
-    .then( console.log('Department added to database.'))
-
-    .catch(console.log)
-}
-
-getRoles = function() {
-
-    const sql = 'SELECT roles.*, departments.name AS department FROM roles LEFT JOIN departments ON roles.dep_id = departments.id;'
-
-    db.promise().query(sql)
-    .then( ([rows,fields]) => {
-
-        console.table('Roles', rows);
+            "return",
+            "quit"
+        ]
 
     })
-    .catch(console.log)
-}
 
-addRole = function() {
+    .then(choice => {
 
-    const sql = 'INSERT INTO roles (title, salary, dep_id) VALUES (?, ?, ?)'
+        if(choice.more === "return") {
 
-    const params = ["Test Role", 200, 3];
+            this.startPrompt();
+        }
+        else if(choice.more === "quit") {
 
-    db.promise().query(sql, params)
+            console.log("goodbye!")
 
-    .then( console.log('role added to database.'))
-
-    .catch(console.log)
-}
-
-getEmployees = function() {
-
-    const sql = "SELECT a.id AS 'ID', a.first_name AS 'First Name', a.last_name AS 'Last Name',b.first_name AS 'Manager', roles.title AS 'Title', roles.salary AS 'Salary', departments.name AS 'Department' FROM employees AS a LEFT JOIN employees AS b ON a.manager_id = b.id LEFT JOIN roles ON roles.id = a.role_id LEFT JOIN departments ON departments.id = roles.dep_id;";
-
-    db.promise().query(sql)
-    .then( ([rows,fields]) => {
-
-        console.table('Employees', rows);
-
+        }
     })
-    .catch(console.log)
 }
 
-addEmployee = function() {
-    
-    const sql = 'INSERT INTO roles (title, salary, dep_id) VALUES (?, ?, ?)'
+// new initApp().startPrompt();
 
-    const params = ["Test Role", 200, 3];
+new Departments().getArray();
 
-    db.promise().query(sql, params)
 
-    .then( console.log('Role added to database.'))
 
-    .catch(console.log)
-
-}
-
-updateEmployee = function() {
-
-    const sql = 'UPDATE employees SET role_id = ? WHERE id = ?;';
-
-    const params = [2,1]
-
-    db.promise().query(sql, params)
-
-    .then( console.log('Role change comitted to database.'))
-
-    .catch(console.log)
-
-}
